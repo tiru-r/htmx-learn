@@ -1,0 +1,156 @@
+version: '3'
+
+vars:
+  BINARY_NAME: htmx-learn
+  BUILD_DIR: ./tmp
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install all dependencies
+    deps: [install-go-tools, install-tailwind]
+    
+  install-go-tools:
+    desc: Install Go development tools
+    cmds:
+      - go install github.com/air-verse/air@latest
+      - go install github.com/a-h/templ/cmd/templ@latest
+    status:
+      - which air
+      - which templ
+
+  install-tailwind:
+    desc: Download Tailwind CSS standalone CLI
+    cmds:
+      - |
+        if [ ! -f "./tailwindcss" ]; then
+          curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64
+          chmod +x tailwindcss-linux-x64
+          mv tailwindcss-linux-x64 tailwindcss
+        fi
+    status:
+      - test -f "./tailwindcss"
+
+  generate:
+    desc: Generate templ templates
+    cmds:
+      - templ generate
+    sources:
+      - "templates/**/*.templ"
+    generates:
+      - "templates/**/*_templ.go"
+
+  css:
+    desc: Build CSS with Tailwind standalone CLI
+    deps: [install-tailwind]
+    cmds:
+      - ./tailwindcss -i static/css/input.css -o static/css/output.css
+    sources:
+      - static/css/input.css
+      - "templates/**/*.templ"
+    generates:
+      - static/css/output.css
+
+  css-watch:
+    desc: Watch and rebuild CSS
+    deps: [install-tailwind]
+    cmds:
+      - ./tailwindcss -i static/css/input.css -o static/css/output.css --watch
+
+  build:
+    desc: Build the application
+    deps: [generate, css]
+    cmds:
+      - go build -o {{.BUILD_DIR}}/{{.BINARY_NAME}} ./cmd/{{.BINARY_NAME}}
+
+  run:
+    desc: Run the application
+    deps: [build]
+    cmds:
+      - "{{.BUILD_DIR}}/{{.BINARY_NAME}}"
+
+  dev:
+    desc: Start development environment with live reload
+    deps: [install]
+    cmds:
+      - task: dev-parallel
+
+  dev-parallel:
+    desc: Run development tasks in parallel
+    deps: [generate]
+    cmds:
+      - |
+        (
+          # Start templ proxy for live reload
+          templ proxy --url=http://localhost:8080 --port=7331 &
+          
+          # Start CSS watcher
+          task css-watch &
+          
+          # Start Air for Go hot reload with inline config
+          air \
+            --build.cmd "go build -o tmp/htmx-learn ./cmd/htmx-learn" \
+            --build.bin "./tmp/htmx-learn" \
+            --build.delay "1000" \
+            --build.exclude_dir "tmp,vendor,static" \
+            --build.include_ext "go,templ" \
+            --misc.clean_on_exit "true" &
+          
+          # Wait for all background processes
+          wait
+        )
+
+  db-init:
+    desc: Initialize database with schema
+    cmds:
+      - mkdir -p data
+      - echo "Database directory created"
+
+  db-reset:
+    desc: Reset database (WARNING: destroys all data)
+    cmds:
+      - rm -f data/app.db
+      - rm -f data/app.db-shm
+      - rm -f data/app.db-wal
+      - echo "Database reset complete"
+
+  db-backup:
+    desc: Backup database
+    cmds:
+      - mkdir -p backups
+      - cp data/app.db backups/app-backup-$(date +%Y%m%d-%H%M%S).db
+      - echo "Database backed up to backups/"
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf {{.BUILD_DIR}}
+      - rm -f templates/**/*_templ.go
+      - rm -f static/css/output.css
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+
+  fmt:
+    desc: Format code
+    cmds:
+      - go fmt ./...
+      - templ fmt .
+
+  lint:
+    desc: Run linters
+    cmds:
+      - go vet ./...
+      - golangci-lint run
+
+  prod-build:
+    desc: Build for production
+    deps: [generate, css]
+    cmds:
+      - CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o {{.BUILD_DIR}}/{{.BINARY_NAME}} ./cmd/{{.BINARY_NAME}}

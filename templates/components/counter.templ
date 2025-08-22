@@ -1,0 +1,47 @@
+package components
+
+import (
+	"fmt"
+	"strconv"
+)
+
+templ Counter(count int) {
+	<div id="counter" class="card p-6 max-w-md mx-auto">
+		<h2 class="text-2xl font-bold text-gray-900 mb-4">HTMX Counter</h2>
+		<div class="text-center">
+			<div class="text-4xl font-bold text-blue-600 mb-6" id="count-display">
+				{ fmt.Sprintf("%d", count) }
+			</div>
+			<div class="flex justify-center space-x-4">
+				<button 
+					class="btn btn-primary"
+					hx-post="/counter/increment"
+					hx-target="#count-display"
+					hx-swap="innerHTML"
+				>
+					Increment
+				</button>
+				<button 
+					class="btn btn-secondary"
+					hx-post="/counter/decrement"
+					hx-target="#count-display"
+					hx-swap="innerHTML"
+				>
+					Decrement
+				</button>
+				<button 
+					class="btn btn-danger"
+					hx-post="/counter/reset"
+					hx-target="#count-display"
+					hx-swap="innerHTML"
+				>
+					Reset
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+templ CountDisplay(count int) {
+	{ strconv.Itoa(count) }
+}

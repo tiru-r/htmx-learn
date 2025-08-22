@@ -1,0 +1,47 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Build directory
+tmp/
+dist/
+
+# Tailwind standalone CLI
+tailwindcss
+
+# Air logs
+.air
+
+# Database files
+data/
+backups/
+*.db
+*.db-shm
+*.db-wal
+
+# Generated files
+templates/**/*_templ.go
+static/css/output.css
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* Custom components using Tailwind CSS v4.1 */
+@layer components {
+  .btn {
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    outline: none;
+  }
+  
+  .btn:focus {
+    ring: 2px solid;
+    ring-offset: 2px;
+  }
+  
+  .btn-primary {
+    background-color: rgb(37 99 235);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: rgb(29 78 216);
+  }
+  
+  .btn-primary:focus {
+    ring-color: rgb(59 130 246);
+  }
+  
+  .btn-secondary {
+    background-color: rgb(229 231 235);
+    color: rgb(17 24 39);
+  }
+  
+  .btn-secondary:hover {
+    background-color: rgb(209 213 219);
+  }
+  
+  .btn-secondary:focus {
+    ring-color: rgb(107 114 128);
+  }
+  
+  .btn-danger {
+    background-color: rgb(220 38 38);
+    color: white;
+  }
+  
+  .btn-danger:hover {
+    background-color: rgb(185 28 28);
+  }
+  
+  .btn-danger:focus {
+    ring-color: rgb(239 68 68);
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    border: 1px solid rgb(229 231 235);
+    overflow: hidden;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgb(209 213 219);
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    outline: none;
+  }
+  
+  .input:focus {
+    ring: 1px solid rgb(59 130 246);
+    border-color: rgb(59 130 246);
+  }
+  
+  .nav-link {
+    color: rgb(75 85 99);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  
+  .nav-link:hover {
+    color: rgb(17 24 39);
+  }
+  
+  .nav-link-active {
+    background-color: rgb(219 234 254);
+    color: rgb(29 78 216);
+  }
+}

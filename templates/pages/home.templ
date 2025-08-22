@@ -1,0 +1,117 @@
+package pages
+
+import "htmx-learn/templates/layouts"
+
+templ Home() {
+	@layouts.Base("Home - HTMX + Go") {
+		<div class="space-y-8">
+			<div class="text-center">
+				<h1 class="text-4xl font-bold text-gray-900 mb-4">
+					Welcome to HTMX + Go
+				</h1>
+				<p class="text-xl text-gray-600 max-w-3xl mx-auto">
+					A modern web application built with Go's net/http, HTMX for dynamic interactions, 
+					Tailwind CSS v4.1 for styling, and Templ for type-safe templates.
+				</p>
+			</div>
+
+			<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<div class="card p-6">
+					<div class="text-blue-600 mb-4">
+						<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+						</svg>
+					</div>
+					<h3 class="text-lg font-semibold text-gray-900 mb-2">Fast & Lightweight</h3>
+					<p class="text-gray-600">
+						Built with Go's standard library for maximum performance and minimal dependencies.
+					</p>
+				</div>
+
+				<div class="card p-6">
+					<div class="text-green-600 mb-4">
+						<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+						</svg>
+					</div>
+					<h3 class="text-lg font-semibold text-gray-900 mb-2">Live Reload</h3>
+					<p class="text-gray-600">
+						Development environment with hot reload for Go code, templates, and CSS.
+					</p>
+				</div>
+
+				<div class="card p-6">
+					<div class="text-purple-600 mb-4">
+						<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+						</svg>
+					</div>
+					<h3 class="text-lg font-semibold text-gray-900 mb-2">Modern Stack</h3>
+					<p class="text-gray-600">
+						HTMX for dynamic interactions, Tailwind CSS v4.1 for styling, and Templ for templates.
+					</p>
+				</div>
+			</div>
+
+			<div class="card p-8">
+				<h2 class="text-2xl font-bold text-gray-900 mb-6">Technology Stack</h2>
+				<div class="grid md:grid-cols-2 gap-6">
+					<div>
+						<h3 class="text-lg font-semibold text-gray-900 mb-3">Backend</h3>
+						<ul class="space-y-2 text-gray-600">
+							<li class="flex items-center">
+								<span class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+								Go with net/http standard library
+							</li>
+							<li class="flex items-center">
+								<span class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+								Templ for type-safe HTML templates
+							</li>
+							<li class="flex items-center">
+								<span class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+								Air for hot reloading during development
+							</li>
+							<li class="flex items-center">
+								<span class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+								Taskfile for task automation
+							</li>
+						</ul>
+					</div>
+					<div>
+						<h3 class="text-lg font-semibold text-gray-900 mb-3">Frontend</h3>
+						<ul class="space-y-2 text-gray-600">
+							<li class="flex items-center">
+								<span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+								HTMX for dynamic interactions
+							</li>
+							<li class="flex items-center">
+								<span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+								Tailwind CSS v4.1 with zero-config
+							</li>
+							<li class="flex items-center">
+								<span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+								Hyperscript for enhanced interactivity
+							</li>
+							<li class="flex items-center">
+								<span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+								Live reload via Templ proxy
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<div class="text-center">
+				<h2 class="text-2xl font-bold text-gray-900 mb-4">Explore the Features</h2>
+				<div class="flex justify-center space-x-4">
+					<a href="/counter" class="btn btn-primary">
+						Try Counter Example
+					</a>
+					<a href="/dynamic" class="btn btn-secondary">
+						Dynamic Content Demo
+					</a>
+				</div>
+			</div>
+		</div>
+	}
+}

@@ -1,0 +1,9 @@
+node_modules
+tmp
+.air.toml
+*.log
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
