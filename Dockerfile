@@ -31,24 +31,28 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o main ./cmd/htmx-learn
 # Production stage
 FROM alpine:latest
 
-# Install ca-certificates for HTTPS
-RUN apk --no-cache add ca-certificates
+# Install ca-certificates for HTTPS and curl for health checks
+RUN apk --no-cache add ca-certificates curl
 
-WORKDIR /root/
+# Create non-root user for security
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+WORKDIR /home/appuser
 
 # Copy binary from builder stage
 COPY --from=builder /app/main .
 COPY --from=builder /app/static ./static
 COPY --from=builder /app/db ./db
 
-# Create data directory for SQLite database
-RUN mkdir -p /data
+# Change ownership to non-root user
+RUN chown -R appuser:appgroup /home/appuser
+
+# Switch to non-root user
+USER appuser
 
 # Expose port
 EXPOSE 8080
-
-# Set environment variable for database path
-ENV DATABASE_PATH=/data/app.db
 
 # Run the binary
 CMD ["./main"]

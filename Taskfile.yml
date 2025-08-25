@@ -1,5 +1,7 @@
 version: '3'
 
+# Modern Taskfile with 2025 best practices
+
 vars:
   BINARY_NAME: htmx-learn
   BUILD_DIR: ./tmp
@@ -104,25 +106,40 @@ tasks:
           wait
         )
 
-  db-init:
-    desc: Initialize database with schema
+  db-start:
+    desc: Start PostgreSQL database using Docker Compose
     cmds:
-      - mkdir -p data
-      - echo "Database directory created"
+      - docker-compose up postgres -d
+      - echo "PostgreSQL database started"
+
+  db-stop:
+    desc: Stop PostgreSQL database
+    cmds:
+      - docker-compose stop postgres
+      - echo "PostgreSQL database stopped"
 
   db-reset:
     desc: Reset database (WARNING: destroys all data)
     cmds:
-      - rm -f data/app.db
-      - rm -f data/app.db-shm
-      - rm -f data/app.db-wal
+      - docker-compose down postgres -v
+      - docker-compose up postgres -d
       - echo "Database reset complete"
 
+  db-logs:
+    desc: View PostgreSQL database logs
+    cmds:
+      - docker-compose logs -f postgres
+
+  db-shell:
+    desc: Connect to PostgreSQL database shell
+    cmds:
+      - docker-compose exec postgres psql -U user -d htmx_learn
+
   db-backup:
-    desc: Backup database
+    desc: Backup PostgreSQL database
     cmds:
       - mkdir -p backups
-      - cp data/app.db backups/app-backup-$(date +%Y%m%d-%H%M%S).db
+      - docker-compose exec postgres pg_dump -U user htmx_learn > backups/backup-$(date +%Y%m%d-%H%M%S).sql
       - echo "Database backed up to backups/"
 
   clean:
@@ -147,7 +164,12 @@ tasks:
     desc: Run linters
     cmds:
       - go vet ./...
-      - golangci-lint run
+      - |
+        if command -v golangci-lint >/dev/null 2>&1; then
+          golangci-lint run
+        else
+          echo "golangci-lint not installed, skipping..."
+        fi
 
   prod-build:
     desc: Build for production

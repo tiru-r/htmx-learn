@@ -2,39 +2,62 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"htmx-learn/config"
 	"htmx-learn/db"
 	"htmx-learn/handlers"
 	"htmx-learn/middleware"
 )
 
 func main() {
-	// Get database path from environment or use default
-	dbPath := os.Getenv("DATABASE_PATH")
-	if dbPath == "" {
-		dbPath = "./data/app.db"
-	}
-
-	// Initialize database
-	database, err := db.New(dbPath)
+	// Load configuration
+	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		slog.Error("Failed to load configuration", "error", err)
+		os.Exit(1)
+	}
+	
+	// Initialize structured logging
+	var logger *slog.Logger
+	if cfg.LogFormat == "json" {
+		logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: parseLogLevel(cfg.LogLevel),
+		}))
+	} else {
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: parseLogLevel(cfg.LogLevel),
+		}))
+	}
+	slog.SetDefault(logger)
+	
+	slog.Info("Starting HTMX learning application",
+		"version", "1.0.0",
+		"environment", cfg.Environment,
+		"port", cfg.Port)
+
+	// Initialize database with pool configuration
+	database, err := db.New(cfg.DatabaseURL, cfg.MaxConnections, cfg.MinConnections)
+	if err != nil {
+		slog.Error("Failed to initialize database", "error", err)
+		os.Exit(1)
 	}
 	defer database.Close()
 
 	// Initialize database schema
-	if err := database.InitSchema(); err != nil {
-		log.Fatalf("Failed to initialize database schema: %v", err)
+	ctx := context.Background()
+	if err := database.InitSchema(ctx); err != nil {
+		slog.Error("Failed to initialize database schema", "error", err)
+		os.Exit(1)
 	}
 
-	// Initialize handlers with database
-	h := handlers.New(database)
+	// Initialize handlers with database and configuration
+	h := handlers.New(database, cfg)
 
 	mux := http.NewServeMux()
 
@@ -55,30 +78,43 @@ func main() {
 	// API routes for dynamic content
 	mux.HandleFunc("GET /api/time", h.GetTime)
 	mux.HandleFunc("GET /api/users", h.GetUsers)
+	mux.HandleFunc("GET /api/users/paginated", h.GetUsersPaginated)
 	mux.HandleFunc("POST /api/users", h.CreateUser)
 	mux.HandleFunc("DELETE /api/users/{id}", h.DeleteUser)
 	mux.HandleFunc("POST /api/search", h.SearchUsers)
+	mux.HandleFunc("POST /api/search/paginated", h.SearchUsersPaginated)
+	
+	// Health check routes
+	mux.HandleFunc("GET /health", h.HealthCheck)
+	mux.HandleFunc("GET /health/ready", h.ReadinessCheck)
+	mux.HandleFunc("GET /health/live", h.LivenessCheck)
 
-	// Apply middleware
+	// Apply middleware with configuration
 	handler := middleware.Recovery(
 		middleware.Logger(
-			middleware.CORS(mux),
+			middleware.SecurityHeaders(
+				middleware.ConfigurableCORS(cfg.AllowedOrigins,
+					middleware.RateLimit(cfg,
+						mux),
+				),
+			),
 		),
 	)
 
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         cfg.GetServerAddress(),
 		Handler:      handler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  cfg.ReadTimeout,
+		WriteTimeout: cfg.WriteTimeout,
+		IdleTimeout:  cfg.IdleTimeout,
 	}
 
 	// Start server in a goroutine
 	go func() {
-		log.Printf("Server starting on http://localhost%s", server.Addr)
+		slog.Info("Server starting", "address", server.Addr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
+			slog.Error("Server failed to start", "error", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -86,16 +122,34 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down server...")
+	slog.Info("Shutting down server...")
 
 	// Create a deadline to wait for
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	shutdownTimeout := 30 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
 	// Attempt graceful shutdown
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+		slog.Error("Server forced to shutdown", "error", err)
+		os.Exit(1)
 	}
 
-	log.Println("Server exited")
+	slog.Info("Server exited gracefully")
+}
+
+// parseLogLevel converts string log level to slog.Level
+func parseLogLevel(level string) slog.Level {
+	switch level {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "warn", "warning":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }

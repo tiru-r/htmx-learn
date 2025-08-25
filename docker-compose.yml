@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: htmx-learn-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: htmx_learn
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d htmx_learn"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: htmx-learn-app
+    environment:
+      # Database configuration
+      DATABASE_URL: postgres://user:password@postgres:5432/htmx_learn?sslmode=disable
+      DB_MAX_CONNECTIONS: 25
+      DB_MIN_CONNECTIONS: 5
+      DB_CONN_MAX_LIFETIME: 1h
+      
+      # Server configuration
+      PORT: 8080
+      HOST: 0.0.0.0
+      ENVIRONMENT: production
+      
+      # Security configuration
+      SECRET_KEY: changeme-production-key-min-32-chars-long
+      ALLOWED_ORIGINS: http://localhost:8080,https://localhost:8080
+      TRUSTED_PROXIES: 127.0.0.1,::1
+      
+      # Rate limiting
+      RATE_LIMIT: 100
+      RATE_LIMIT_WINDOW: 1m
+      RATE_LIMIT_BURST: 20
+      
+      # Logging
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:

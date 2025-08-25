@@ -72,6 +72,23 @@ templ DynamicContent() {
 		</div>
 
 		<div class="card p-6">
+			<h2 class="text-2xl font-bold text-gray-900 mb-4">Paginated User List</h2>
+			<div class="space-y-4">
+				<button 
+					class="btn btn-secondary"
+					hx-get="/api/users/paginated?page=1&page_size=5"
+					hx-target="#user-list"
+					hx-swap="innerHTML"
+				>
+					Load Paginated Users
+				</button>
+				<div id="user-list" class="space-y-2">
+					<!-- Paginated users will be loaded here -->
+				</div>
+			</div>
+		</div>
+
+		<div class="card p-6">
 			<h2 class="text-2xl font-bold text-gray-900 mb-4">Search Example</h2>
 			<div class="space-y-4">
 				<input 

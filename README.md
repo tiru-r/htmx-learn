@@ -1,31 +1,32 @@
 # HTMX + Go Web Application
 
-A modern web application built with Go's standard `net/http` library, HTMX for dynamic interactions, Tailwind CSS v4.1 for styling, and Templ for type-safe HTML templates.
+A modern web application built with Go 1.25's standard `net/http` library, HTMX 2.0.6 for dynamic interactions, Tailwind CSS v4.1.12 for styling, and Templ v0.3.943 for type-safe HTML templates.
 
 ## Features
 
 - **Go Standard Library**: Built with `net/http` for maximum performance and minimal dependencies
-- **HTMX**: Dynamic interactions without writing JavaScript
-- **Tailwind CSS v4.1**: Zero-config utility-first CSS framework with standalone CLI
-- **Templ**: Type-safe HTML templates for Go
-- **SQLite**: Modern SQLite database with WAL mode for persistence
+- **HTMX 2.0.6**: Dynamic interactions without writing JavaScript
+- **Tailwind CSS v4.1.12**: Zero-config utility-first CSS framework with standalone CLI
+- **Templ v0.3.943**: Type-safe HTML templates for Go
+- **PostgreSQL**: Modern PostgreSQL database with connection pooling
+- **Hyperscript v0.9.14**: Enhanced HTML interactivity
 - **Live Reload**: Hot reload for Go code, templates, and CSS during development
-- **Task Runner**: Automated development workflow with Taskfile
+- **Task Runner v3**: Automated development workflow with modern Taskfile
 - **Production Ready**: Dockerized with graceful shutdown
 
 ## Technology Stack
 
 ### Backend
-- Go with `net/http` standard library
-- SQLite with modernc.org/sqlite driver
-- Templ for type-safe HTML templates
+- Go 1.25 with `net/http` standard library
+- PostgreSQL with jackc/pgx/v5 driver and connection pooling
+- Templ v0.3.943 for type-safe HTML templates
 - Air for hot reloading during development
-- Taskfile for task automation
+- Taskfile v3 for task automation
 
 ### Frontend
-- HTMX for dynamic interactions
-- Tailwind CSS v4.1 with standalone CLI (zero-config)
-- Hyperscript for enhanced interactivity
+- HTMX 2.0.6 for dynamic interactions
+- Tailwind CSS v4.1.12 with standalone CLI (zero-config)
+- Hyperscript v0.9.14 for enhanced interactivity
 - Live reload via Templ proxy
 
 ## Quick Start
@@ -33,10 +34,11 @@ A modern web application built with Go's standard `net/http` library, HTMX for d
 ### Prerequisites
 
 - Go 1.25+ (includes container-aware GOMAXPROCS)
+- PostgreSQL 13+ (or Docker/Docker Compose)
 - [Task](https://taskfile.dev) (optional but recommended)
 - curl (for downloading Tailwind CLI)
 
-**No Node.js required!** Uses Tailwind standalone CLI.
+**No Node.js required!** Uses Tailwind v4.1.12 standalone CLI.
 
 ### Installation
 
@@ -50,12 +52,26 @@ A modern web application built with Go's standard `net/http` library, HTMX for d
    # chmod +x tailwindcss-linux-x64 && mv tailwindcss-linux-x64 tailwindcss
    ```
 
-2. Start development environment:
+2. Start PostgreSQL database:
+   ```bash
+   # Using Docker Compose (recommended)
+   docker-compose up postgres -d
+   
+   # Or start your local PostgreSQL instance
+   # Make sure database 'htmx_learn' exists
+   ```
+
+3. Set database URL (optional, uses default if not set):
+   ```bash
+   export DATABASE_URL="postgres://user:password@localhost:5432/htmx_learn?sslmode=disable"
+   ```
+
+4. Start development environment:
    ```bash
    task dev
    ```
 
-3. Open your browser to http://localhost:7331 (Templ proxy with live reload)
+5. Open your browser to http://localhost:7331 (Templ proxy with live reload)
 
 The application will be running with:
 - Go server on http://localhost:8080
@@ -154,11 +170,12 @@ The application includes several HTMX examples:
 ### Docker
 
 ```bash
-# Build production image
-docker build -t htmx-learn .
+# Using Docker Compose (includes PostgreSQL)
+docker-compose up --build
 
-# Run container
-docker run -p 8080:8080 htmx-learn
+# Or build and run manually
+docker build -t htmx-learn .
+docker run -p 8080:8080 -e DATABASE_URL="postgres://user:password@host.docker.internal:5432/htmx_learn?sslmode=disable" htmx-learn
 ```
 
 ### Manual Build
@@ -175,13 +192,15 @@ task prod-build
 
 ### Environment Variables
 
+- `DATABASE_URL`: PostgreSQL connection string (default: postgres://user:password@localhost:5432/htmx_learn?sslmode=disable)
 - `PORT`: Server port (default: 8080)
 
 ### Development Tools
 
 - **Air**: Configured inline via Taskfile for Go hot reloading
-- **Templ**: Live reload proxy for browser auto-refresh
-- **Tailwind**: Zero-config setup with custom components
+- **Templ v0.3.943**: Live reload proxy for browser auto-refresh
+- **Tailwind v4.1.12**: Zero-config setup with custom components
+- **Task v3**: Modern task runner with YAML configuration
 
 ## Contributing
 
